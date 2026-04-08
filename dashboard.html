@@ -44,12 +44,30 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="f-mois">
+              <label class="form-label">
                 Mois / Année
                 <span class="input-tag tag-input">Saisie</span>
               </label>
-              <input class="form-input" id="f-mois" type="month" />
-              <div class="hint">Format : mois + année</div>
+              <div class="month-picker">
+                <select class="form-input" id="f-mois-month">
+                  <option value="">Mois</option>
+                  <option value="01">Janvier</option>
+                  <option value="02">Février</option>
+                  <option value="03">Mars</option>
+                  <option value="04">Avril</option>
+                  <option value="05">Mai</option>
+                  <option value="06">Juin</option>
+                  <option value="07">Juillet</option>
+                  <option value="08">Août</option>
+                  <option value="09">Septembre</option>
+                  <option value="10">Octobre</option>
+                  <option value="11">Novembre</option>
+                  <option value="12">Décembre</option>
+                </select>
+                <select class="form-input" id="f-mois-year" style="width:90px;">
+                  <option value="">Année</option>
+                </select>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label" for="f-sprint">
@@ -75,7 +93,6 @@
                 <span class="input-tag tag-input">Saisie</span>
               </label>
               <input class="form-input" id="f-jours-abs" type="number" min="0" step="0.5" placeholder="ex : 5" />
-              <div class="hint">Total de tous les devs</div>
             </div>
           </div>
 
@@ -158,20 +175,17 @@
             <tr>
               <th>Sprint</th>
               <th>Mois</th>
-              <th>Nb devs</th>
-              <th>Jours abs.</th>
-              <th>Jours ouvrés</th>
-              <th>Vél. est. HC</th>
-              <th class="col-highlight">Vél. est. AC</th>
+              <th class="col-desktop-only">Nb devs</th>
+              <th class="col-desktop-only">Jours abs.</th>
+              <th class="col-desktop-only">Jours ouvrés</th>
+              <th class="col-highlight">Vél. estimée</th>
               <th>Vél. constatée</th>
-              <th>Vél. calc. HC</th>
-              <th>Moy. Vél. calc. HC</th>
-              <th>Actions</th>
+              <th class="col-desktop-only">Actions</th>
             </tr>
           </thead>
           <tbody id="history-body">
             <tr>
-              <td colspan="11">
+              <td colspan="8">
                 <div class="empty-state">
                   <div class="empty-state-icon">◎</div>
                   <p>Aucun sprint enregistré. Commencez par saisir votre premier sprint.</p>

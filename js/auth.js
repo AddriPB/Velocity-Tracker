@@ -13,8 +13,9 @@ function buildEmail(projectId) {
 async function loginProject(projectId, code) {
   const email = buildEmail(projectId);
   const result = await auth.signInWithEmailAndPassword(email, code);
-  // Stocker l'ID projet lisible pour l'affichage (pas l'email)
-  sessionStorage.setItem('projectId', projectId.trim());
+  const pid = projectId.trim();
+  sessionStorage.setItem('projectId', pid);
+  localStorage.setItem('projectId', pid);
   return result;
 }
 
@@ -22,17 +23,26 @@ async function createProject(projectId, code) {
   if (code.length < 6) throw new Error('Le code doit contenir au moins 6 caractères.');
   const email = buildEmail(projectId);
   const result = await auth.createUserWithEmailAndPassword(email, code);
-  sessionStorage.setItem('projectId', projectId.trim());
+  const pid = projectId.trim();
+  sessionStorage.setItem('projectId', pid);
+  localStorage.setItem('projectId', pid);
   return result;
 }
 
 async function logoutProject() {
   sessionStorage.removeItem('projectId');
+  localStorage.removeItem('projectId');
   await auth.signOut();
 }
 
 function getProjectId() {
-  return sessionStorage.getItem('projectId') || '';
+  return sessionStorage.getItem('projectId') || localStorage.getItem('projectId') || '';
+}
+
+/** Extrait l'ID projet depuis l'email Firebase (fallback si storage vide). */
+function extractProjectIdFromEmail(email) {
+  if (!email) return '';
+  return email.replace(AUTH_DOMAIN_SUFFIX, '');
 }
 
 // Redirige selon l'état d'authentification

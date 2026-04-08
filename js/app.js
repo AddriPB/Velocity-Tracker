@@ -16,11 +16,41 @@ const App = (() => {
 
   async function init() {
     currentUser = await requireAuth('index.html');
-    document.getElementById('header-project-id').textContent = getProjectId() || currentUser.uid.slice(0, 8);
+    const pid = getProjectId() || extractProjectIdFromEmail(currentUser.email);
+    document.getElementById('header-project-id').textContent = pid || currentUser.uid.slice(0, 8);
     document.getElementById('loading-overlay').classList.add('hidden');
 
+    initYearOptions();
     await loadSprints();
     bindFormListeners();
+  }
+
+  function initYearOptions() {
+    const sel = document.getElementById('f-mois-year');
+    const cur = new Date().getFullYear();
+    for (let y = cur - 5; y <= cur + 3; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      sel.appendChild(opt);
+    }
+  }
+
+  function getMoisValue() {
+    const m = document.getElementById('f-mois-month').value;
+    const y = document.getElementById('f-mois-year').value;
+    return (m && y) ? `${y}-${m}` : '';
+  }
+
+  function setMoisValue(yyyymm) {
+    if (!yyyymm) {
+      document.getElementById('f-mois-month').value = '';
+      document.getElementById('f-mois-year').value = '';
+      return;
+    }
+    const [y, m] = yyyymm.split('-');
+    document.getElementById('f-mois-month').value = m;
+    document.getElementById('f-mois-year').value = y;
   }
 
   // ── Firestore ─────────────────────────────────────────────────────────────
@@ -137,8 +167,9 @@ const App = (() => {
   // ── Form Helpers ──────────────────────────────────────────────────────────
 
   function bindFormListeners() {
-    // Synchronisation Mois ↔ Sprint
-    document.getElementById('f-mois').addEventListener('change', onMoisChange);
+    // Synchronisation Mois ↔ Sprint (deux selects)
+    document.getElementById('f-mois-month').addEventListener('change', onMoisChange);
+    document.getElementById('f-mois-year').addEventListener('change', onMoisChange);
     document.getElementById('f-sprint').addEventListener('input', onSprintChange);
 
     // Recalcul temps réel
@@ -148,7 +179,7 @@ const App = (() => {
   }
 
   function onMoisChange() {
-    const moisVal = document.getElementById('f-mois').value; // "YYYY-MM"
+    const moisVal = getMoisValue();
     if (!moisVal) return;
 
     // Auto-calcul jours ouvrés
@@ -183,7 +214,7 @@ const App = (() => {
     // Calculer le mois correspondant
     if (firstSprintMois) {
       const mois = addMonths(firstSprintMois, sprintVal - 1);
-      document.getElementById('f-mois').value = mois;
+      setMoisValue(mois);
       const [year, month] = mois.split('-').map(Number);
       document.getElementById('f-nb-jours').value = getFrenchWorkingDays(year, month);
     }
@@ -236,7 +267,7 @@ const App = (() => {
     const nextNbJours = getFrenchWorkingDays(year, month);
 
     document.getElementById('f-sprint').value = nextSprintNum;
-    document.getElementById('f-mois').value   = nextMois;
+    setMoisValue(nextMois);
     document.getElementById('f-nb-jours').value = nextNbJours;
 
     // Pré-remplir Nb devs avec le dernier sprint
@@ -256,7 +287,7 @@ const App = (() => {
   }
 
   function collectFormData() {
-    const mois     = document.getElementById('f-mois').value;
+    const mois     = getMoisValue();
     const sprint   = parseInt(document.getElementById('f-sprint').value, 10);
     const nbDev    = parseFloatOrNull(document.getElementById('f-nb-dev').value);
     const joursAbs = parseFloatOrNull(document.getElementById('f-jours-abs').value) ?? 0;
@@ -293,7 +324,8 @@ const App = (() => {
   }
 
   function resetForm() {
-    ['f-mois', 'f-sprint', 'f-nb-dev', 'f-jours-abs', 'f-nb-jours', 'f-vel-hc', 'f-vel-const'].forEach(id => {
+    setMoisValue('');
+    ['f-sprint', 'f-nb-dev', 'f-jours-abs', 'f-nb-jours', 'f-vel-hc', 'f-vel-const'].forEach(id => {
       document.getElementById(id).value = '';
     });
     document.getElementById('result-vel-ac').textContent = '—';
@@ -317,7 +349,7 @@ const App = (() => {
 
     if (count === 0) {
       tbody.innerHTML = `
-        <tr><td colspan="11">
+        <tr><td colspan="8">
           <div class="empty-state">
             <div class="empty-state-icon">◎</div>
             <p>Aucun sprint enregistré. Commencez par saisir votre premier sprint.</p>
@@ -327,22 +359,22 @@ const App = (() => {
     }
 
     tbody.innerHTML = sorted.map(s => `
-      <tr>
+      <tr onclick="App.openModal('${s.id}')">
         <td class="col-sprint">${s.sprint}</td>
-        <td>${formatMois(s.mois)}</td>
-        <td>${s.nbDev ?? '—'}</td>
-        <td>${s.joursAbsDev ?? 0}</td>
-        <td>${s.nbJours ?? '—'}</td>
-        <td class="col-muted">${formatVal(s.velEstHC, 1)}</td>
+        <td>
+          <span class="month-full">${formatMois(s.mois, false)}</span>
+          <span class="month-short">${formatMois(s.mois, true)}</span>
+        </td>
+        <td class="col-desktop-only">${s.nbDev ?? '—'}</td>
+        <td class="col-desktop-only">${s.joursAbsDev ?? 0}</td>
+        <td class="col-desktop-only">${s.nbJours ?? '—'}</td>
         <td class="col-highlight">${formatVal(s.velEstAC, 1)}</td>
         <td class="${s.velConst !== null && s.velConst !== undefined ? 'col-success' : 'col-muted'}">
           ${s.velConst !== null && s.velConst !== undefined ? formatVal(s.velConst, 1) : '—'}
         </td>
-        <td>${formatVal(s.velCalcHC, 2)}</td>
-        <td>${formatVal(s.moyVelCalcHC, 2)}</td>
-        <td>
+        <td class="col-desktop-only">
           <div class="td-actions">
-            <button class="btn-edit" onclick="App.openModal('${s.id}')">Éditer</button>
+            <button class="btn-edit" onclick="event.stopPropagation();App.openModal('${s.id}')">Éditer</button>
           </div>
         </td>
       </tr>
@@ -401,12 +433,15 @@ const App = (() => {
   }
 
   /**
-   * Formate "2025-03" en "mars 2025".
+   * Formate "2025-03".
+   * short=false → "mars 2025" (desktop)
+   * short=true  → "mars"      (mobile)
    */
-  function formatMois(mois) {
+  function formatMois(mois, short = false) {
     if (!mois) return '—';
     const [y, m] = mois.split('-').map(Number);
     const date = new Date(y, m - 1, 1);
+    if (short) return date.toLocaleDateString('fr-FR', { month: 'long' });
     return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   }
 

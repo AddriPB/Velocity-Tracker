@@ -16,6 +16,7 @@
 
   --accent: #4f6ef7;
   --accent-hover: #6b87ff;
+  --accent-bright: #9ab0ff;   /* texte sur fond sombre — contraste renforcé */
   --accent-dim: rgba(79, 110, 247, 0.15);
   --accent-success: #22c87a;
   --accent-warning: #f59e0b;
@@ -24,7 +25,7 @@
   --text-primary: #e8eaf0;
   --text-secondary: #8b90a7;
   --text-muted: #555a72;
-  --text-accent: #4f6ef7;
+  --text-accent: #9ab0ff;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -295,7 +296,7 @@ a:hover { color: var(--accent-hover); }
 .header-project-badge {
   background: var(--accent-dim);
   border: 1px solid rgba(79, 110, 247, 0.3);
-  color: var(--accent);
+  color: var(--accent-bright);
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   font-size: 0.72rem;
@@ -348,7 +349,7 @@ a:hover { color: var(--accent-hover); }
 
 .form-card-title .badge {
   background: var(--accent-dim);
-  color: var(--accent);
+  color: var(--accent-bright);
   border: 1px solid rgba(79, 110, 247, 0.25);
   font-size: 0.65rem;
   font-weight: 600;
@@ -398,7 +399,7 @@ a:hover { color: var(--accent-hover); }
 }
 
 .tag-input { background: rgba(34, 200, 122, 0.12); color: var(--accent-success); }
-.tag-auto  { background: rgba(79, 110, 247, 0.12); color: var(--accent); }
+.tag-auto  { background: rgba(79, 110, 247, 0.12); color: var(--accent-bright); }
 .tag-calc  { background: rgba(245, 158, 11, 0.12); color: var(--accent-warning); }
 
 /* ---- Result Card ---- */
@@ -558,7 +559,7 @@ th {
 }
 
 th.col-highlight {
-  color: var(--accent);
+  color: var(--accent-bright);
   background: rgba(79, 110, 247, 0.05);
 }
 
@@ -579,7 +580,7 @@ td.col-sprint {
 }
 
 td.col-highlight {
-  color: var(--accent);
+  color: var(--accent-bright);
   font-weight: 700;
   font-size: 0.9rem;
   background: rgba(79, 110, 247, 0.04);
@@ -768,9 +769,62 @@ td.col-success {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ===================================================
-   RESPONSIVE (min-width garde)
+   MONTH PICKER (custom selects)
+   =================================================== */
+
+.month-picker {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+
+.month-picker select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b90a7' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+  cursor: pointer;
+}
+
+.month-picker select.form-input option {
+  background: #1e2130;
+  color: #e8eaf0;
+}
+
+/* ===================================================
+   TABLE — colonnes desktop/mobile
+   =================================================== */
+
+.col-desktop-only { /* visible desktop, caché mobile */ }
+
+.month-short { display: none; }
+.month-full  { display: inline; }
+
+/* ===================================================
+   RESPONSIVE
    =================================================== */
 
 @media (max-width: 960px) {
   .form-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  /* Empêche le zoom iOS sur les inputs */
+  input, select, textarea { font-size: 16px !important; }
+
+  .app-main { padding: 1rem; }
+
+  /* Tableau : cacher colonnes desktop */
+  .col-desktop-only { display: none; }
+
+  /* Mois : afficher version courte (sans année) */
+  .month-full  { display: none; }
+  .month-short { display: inline; }
+
+  /* Ligne cliquable sur mobile (à la place du bouton Éditer caché) */
+  #history-body tr { cursor: pointer; }
+
+  .modal { padding: 1.5rem 1.25rem; }
 }
