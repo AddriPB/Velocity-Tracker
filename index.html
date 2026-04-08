@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Velocity Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="login-page">
+
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="app-title">Velocity Tracker</div>
+      <div class="app-subtitle">Suivi de vélocité agile · Story Points</div>
+    </div>
+
+    <div class="login-tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Se connecter</button>
+      <button class="tab-btn" id="tab-create" onclick="switchTab('create')">Créer un projet</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" autocomplete="off" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="login-project">ID Projet</label>
+        <input class="form-input" id="login-project" type="text" placeholder="PROJET" autocomplete="off" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-code">Code</label>
+        <input class="form-input" id="login-code" type="password" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <button class="btn btn-primary" type="submit" id="login-btn">Se connecter</button>
+      <div class="error-msg" id="login-error"></div>
+    </form>
+
+    <!-- Create Form -->
+    <form id="create-form" style="display:none;" autocomplete="off" onsubmit="handleCreate(event)">
+      <div class="form-group">
+        <label class="form-label" for="create-project">ID Projet</label>
+        <input class="form-input" id="create-project" type="text" placeholder="PROJET" autocomplete="off" required />
+        <div class="hint" style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem;">
+          Choisissez un identifiant unique pour votre projet (lettres, chiffres, tirets).
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="create-code">Code (min. 6 caractères)</label>
+        <input class="form-input" id="create-code" type="password" placeholder="••••••••" autocomplete="new-password" required minlength="6" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="create-code2">Confirmer le code</label>
+        <input class="form-input" id="create-code2" type="password" placeholder="••••••••" autocomplete="new-password" required minlength="6" />
+      </div>
+      <button class="btn btn-primary" type="submit" id="create-btn">Créer le projet</button>
+      <div class="error-msg" id="create-error"></div>
+      <div class="success-msg" id="create-success"></div>
+    </form>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirige vers le dashboard si déjà connecté
+    requireGuest('dashboard.html');
+
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('tab-login').classList.toggle('active', isLogin);
+      document.getElementById('tab-create').classList.toggle('active', !isLogin);
+      document.getElementById('login-form').style.display = isLogin ? '' : 'none';
+      document.getElementById('create-form').style.display = isLogin ? 'none' : '';
+      clearErrors();
+    }
+
+    function clearErrors() {
+      ['login-error', 'create-error', 'create-success'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('visible');
+        el.textContent = '';
+      });
+    }
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      clearErrors();
+      const btn = document.getElementById('login-btn');
+      const projectId = document.getElementById('login-project').value.trim();
+      const code = document.getElementById('login-code').value;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Connexion…';
+
+      try {
+        await loginProject(projectId, code);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        const msg = err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+          ? 'ID Projet ou code incorrect.'
+          : err.message;
+        showError('login-error', msg);
+        btn.disabled = false;
+        btn.textContent = 'Se connecter';
+      }
+    }
+
+    async function handleCreate(e) {
+      e.preventDefault();
+      clearErrors();
+      const btn = document.getElementById('create-btn');
+      const projectId = document.getElementById('create-project').value.trim();
+      const code = document.getElementById('create-code').value;
+      const code2 = document.getElementById('create-code2').value;
+
+      if (code !== code2) {
+        showError('create-error', 'Les codes ne correspondent pas.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Création…';
+
+      try {
+        await createProject(projectId, code);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        const msg = err.code === 'auth/email-already-in-use'
+          ? 'Cet ID Projet est déjà utilisé. Choisissez-en un autre ou connectez-vous.'
+          : err.message;
+        showError('create-error', msg);
+        btn.disabled = false;
+        btn.textContent = 'Créer le projet';
+      }
+    }
+  </script>
+</body>
+</html>

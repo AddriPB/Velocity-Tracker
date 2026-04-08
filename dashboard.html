@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Velocity Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="app-layout">
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading-overlay">
+    <span class="spinner" style="width:24px;height:24px;border-width:3px;"></span>
+  </div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="header-title">Velocity Tracker</span>
+      <span class="header-project-badge" id="header-project-id">—</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" onclick="App.logout()">Déconnexion</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="app-main">
+
+    <!-- ── New Sprint Form ── -->
+    <div class="form-card">
+      <div class="form-card-title">
+        Nouveau sprint
+        <span class="badge" id="form-sprint-badge">Sprint ?</span>
+      </div>
+
+      <div class="form-grid">
+
+        <!-- LEFT: Inputs -->
+        <div>
+          <div class="form-section-label">Paramètres du sprint</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="f-mois">
+                Mois / Année
+                <span class="input-tag tag-input">Saisie</span>
+              </label>
+              <input class="form-input" id="f-mois" type="month" />
+              <div class="hint">Format : mois + année</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-sprint">
+                N° Sprint
+                <span class="input-tag tag-input">Saisie</span>
+              </label>
+              <input class="form-input" id="f-sprint" type="number" min="1" step="1" placeholder="ex : 1" />
+              <div class="hint">Synchronisé avec le mois</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="f-nb-dev">
+                Nombre de devs
+                <span class="input-tag tag-input">Saisie</span>
+              </label>
+              <input class="form-input" id="f-nb-dev" type="number" min="0" step="1" placeholder="ex : 6" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-jours-abs">
+                Jours d'absence devs
+                <span class="input-tag tag-input">Saisie</span>
+              </label>
+              <input class="form-input" id="f-jours-abs" type="number" min="0" step="0.5" placeholder="ex : 5" />
+              <div class="hint">Total de tous les devs</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-nb-jours">
+              Nombre jours ouvrés
+              <span class="input-tag tag-auto">Auto</span>
+            </label>
+            <input class="form-input" id="f-nb-jours" type="number" min="1" step="1" placeholder="Calculé automatiquement" />
+            <div class="hint">Calculé pour la France — modifiable si besoin</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-vel-hc">
+              Vélocité estimée Hors Congés
+              <span class="input-tag tag-auto">Pré-rempli</span>
+            </label>
+            <input class="form-input" id="f-vel-hc" type="number" min="0" step="0.01" placeholder="ex : 160" />
+            <div class="hint">Pré-rempli d'après le sprint précédent — modifiable</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Result -->
+        <div>
+          <div class="form-section-label">Résultat</div>
+
+          <div class="result-card">
+            <div class="result-main">
+              <div class="result-label">Vélocité estimée Avec Congés</div>
+              <div class="result-value" id="result-vel-ac">—</div>
+              <div class="result-unit">story points estimés pour ce sprint</div>
+            </div>
+
+            <div class="result-details">
+              <div class="result-detail-row">
+                <span class="result-detail-label">Nb. devs réel (pondéré congés)</span>
+                <span class="result-detail-value" id="result-nb-dev-reel">—</span>
+              </div>
+              <div class="result-detail-row" style="padding-top:0.75rem;border-top:1px solid var(--border-light);">
+                <span class="result-detail-label">Vélocité constatée (sprint terminé)</span>
+                <span style="flex:1;"></span>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <input class="form-input" id="f-vel-const" type="number" min="0" step="0.01"
+                  placeholder="Saisir après la fin du sprint" />
+                <div class="hint">Nombre de SP réellement réalisés</div>
+              </div>
+              <div class="result-detail-row">
+                <span class="result-detail-label">Vélocité calculée Hors Congés</span>
+                <span class="result-detail-value highlight" id="result-vel-calc-hc">—</span>
+              </div>
+              <div class="result-detail-row">
+                <span class="result-detail-label">Moy. Vél. calc. Hors Congés (6 mois)</span>
+                <span class="result-detail-value" id="result-moy-vel">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-reset" type="button" onclick="App.resetForm()">Réinitialiser</button>
+            <button class="btn btn-save" type="button" onclick="App.saveSprint()" id="save-btn">
+              Enregistrer le sprint
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── History ── -->
+    <div class="history-card">
+      <div class="history-header">
+        <h2>Historique des sprints</h2>
+        <span class="sprint-count-badge" id="sprint-count">0 sprint</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="history-table">
+          <thead>
+            <tr>
+              <th>Sprint</th>
+              <th>Mois</th>
+              <th>Nb devs</th>
+              <th>Jours abs.</th>
+              <th>Jours ouvrés</th>
+              <th>Vél. est. HC</th>
+              <th class="col-highlight">Vél. est. AC</th>
+              <th>Vél. constatée</th>
+              <th>Vél. calc. HC</th>
+              <th>Moy. Vél. calc. HC</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="11">
+                <div class="empty-state">
+                  <div class="empty-state-icon">◎</div>
+                  <p>Aucun sprint enregistré. Commencez par saisir votre premier sprint.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Edit Modal ── -->
+  <div class="modal-overlay" id="edit-modal" onclick="App.closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Modifier le sprint</h3>
+        <button class="modal-close" onclick="App.closeModal()">✕</button>
+      </div>
+
+      <input type="hidden" id="modal-sprint-id" />
+
+      <div class="form-group">
+        <label class="form-label">Vélocité constatée</label>
+        <input class="form-input" id="modal-vel-const" type="number" min="0" step="0.01"
+          placeholder="Story points réalisés" />
+        <div class="hint">Saisir après la fin du sprint</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nombre de devs</label>
+        <input class="form-input" id="modal-nb-dev" type="number" min="0" step="1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jours d'absence devs</label>
+        <input class="form-input" id="modal-jours-abs" type="number" min="0" step="0.5" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nombre jours ouvrés</label>
+        <input class="form-input" id="modal-nb-jours" type="number" min="1" step="1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vélocité estimée Hors Congés</label>
+        <input class="form-input" id="modal-vel-hc" type="number" min="0" step="0.01" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-danger" onclick="App.deleteSprint()">Supprimer</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">Annuler</button>
+        <button class="btn btn-save" onclick="App.saveModal()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Container ── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/working-days.js"></script>
+  <script src="js/calculations.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
