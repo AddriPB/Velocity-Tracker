@@ -66,10 +66,12 @@ const App = (() => {
     isFirstSprint = allSprints.length === 0;
     firstSprintMois = allSprints.length > 0 ? allSprints[0].mois : null;
     renderHistory();
+    updateVelHCVisibility();
     prefillNextSprint();
   }
 
   async function saveSprint() {
+    animateBtn(document.getElementById('save-btn'));
     const data = collectFormData();
     if (!data) return;
 
@@ -167,11 +169,35 @@ const App = (() => {
 
   // ── Form Helpers ──────────────────────────────────────────────────────────
 
+  function updateVelHCVisibility() {
+    // Visible uniquement pour le tout premier sprint (pas de données historiques)
+    document.getElementById('vel-hc-group').style.display =
+      allSprints.length === 0 ? '' : 'none';
+  }
+
+  function animateBtn(btn) {
+    if (!btn) return;
+    btn.classList.remove('btn-press');
+    void btn.offsetWidth; // force reflow
+    btn.classList.add('btn-press');
+    btn.addEventListener('animationend', () => btn.classList.remove('btn-press'), { once: true });
+  }
+
   function bindFormListeners() {
     // Synchronisation Mois ↔ Sprint (deux selects)
     document.getElementById('f-mois-month').addEventListener('change', onMoisChange);
     document.getElementById('f-mois-year').addEventListener('change', onMoisChange);
-    document.getElementById('f-sprint').addEventListener('input', onSprintChange);
+
+    // Sprint : entiers ≥ 0 uniquement, pas de "-" ni de "."
+    const sprintInput = document.getElementById('f-sprint');
+    sprintInput.addEventListener('keydown', e => {
+      if (['-', '+', '.', 'e'].includes(e.key)) e.preventDefault();
+    });
+    sprintInput.addEventListener('input', () => {
+      const clean = sprintInput.value.replace(/[^0-9]/g, '');
+      if (sprintInput.value !== clean) sprintInput.value = clean;
+      onSprintChange();
+    });
 
     // Nb devs : recalcule velEstHC automatiquement si pas d'override manuel
     document.getElementById('f-nb-dev').addEventListener('input', () => {
@@ -319,8 +345,8 @@ const App = (() => {
       const prefill = calcVelEstHCPrefill(nbDevNext, moyNbDev, lastMoyVel);
       document.getElementById('f-vel-hc').value = prefill !== null ? formatVal(prefill, 2) : '';
     }
-    velHCEdited = false; // reset du flag : le prefill ne compte pas comme override
-
+    velHCEdited = false;
+    updateVelHCVisibility();
     updateBadge();
     updateLiveCalc();
   }
@@ -363,6 +389,7 @@ const App = (() => {
   }
 
   function resetForm() {
+    animateBtn(document.querySelector('.btn-reset'));
     velHCEdited = false;
     setMoisValue('');
     ['f-sprint', 'f-nb-dev', 'f-jours-abs', 'f-nb-jours', 'f-vel-hc', 'f-vel-const'].forEach(id => {
@@ -405,13 +432,13 @@ const App = (() => {
           <span class="month-full">${formatMois(s.mois, false)}</span>
           <span class="month-short">${formatMois(s.mois, true)}</span>
         </td>
-        <td class="col-desktop-only">${s.nbDev ?? '—'}</td>
-        <td class="col-desktop-only">${s.joursAbsDev ?? 0}</td>
-        <td class="col-desktop-only">${s.nbJours ?? '—'}</td>
         <td class="col-highlight">${formatVal(s.velEstAC, 1)}</td>
         <td class="${s.velConst !== null && s.velConst !== undefined ? 'col-success' : 'col-muted'}">
           ${s.velConst !== null && s.velConst !== undefined ? formatVal(s.velConst, 1) : '—'}
         </td>
+        <td class="col-desktop-only">${s.nbDev ?? '—'}</td>
+        <td class="col-desktop-only">${s.joursAbsDev ?? 0}</td>
+        <td class="col-desktop-only">${s.nbJours ?? '—'}</td>
         <td class="col-desktop-only">
           <div class="td-actions">
             <button class="btn-edit" onclick="event.stopPropagation();App.openModal('${s.id}')">Éditer</button>

@@ -490,14 +490,14 @@ a:hover { color: var(--accent-hover); }
 .btn-save:hover { background: var(--accent-hover); }
 
 .btn-reset {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
+  background: rgba(239, 68, 68, 0.07);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.22);
 }
 
 .btn-reset:hover {
-  border-color: var(--accent-danger);
-  color: var(--accent-danger);
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.38);
 }
 
 /* ===================================================
@@ -732,6 +732,18 @@ td.col-success {
 }
 
 /* ===================================================
+   ANIMATION CLIC BOUTONS
+   =================================================== */
+
+@keyframes btnPress {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+.btn-press { animation: btnPress 0.18s ease; }
+
+/* ===================================================
    LOADING
    =================================================== */
 
@@ -767,6 +779,17 @@ td.col-success {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ===================================================
+   SUPPRIMER LES FLÈCHES DES INPUTS NUMBER
+   =================================================== */
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
 
 /* ===================================================
    MONTH PICKER (custom selects)
@@ -827,4 +850,24 @@ td.col-success {
   #history-body tr { cursor: pointer; }
 
   .modal { padding: 1.5rem 1.25rem; }
+
+  /* Month picker : mois large, année compacte */
+  .month-picker { grid-template-columns: 1fr 72px; }
+
+  /* Formulaire : champs en colonne, boutons alignés pleine largeur */
+  .form-row { grid-template-columns: 1fr 1fr; } /* garder 2 cols sauf sprint/mois */
+  .form-actions {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .btn-save,
+  .btn-reset {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Mois/Sprint : mois large, sprint compact */
+  .form-row:first-child {
+    grid-template-columns: 1fr 80px;
+  }
 }

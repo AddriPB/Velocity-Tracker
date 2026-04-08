@@ -74,8 +74,7 @@
                 N° Sprint
                 <span class="input-tag tag-input">Saisie</span>
               </label>
-              <input class="form-input" id="f-sprint" type="number" min="1" step="1" placeholder="ex : 1" />
-              <div class="hint">Synchronisé avec le mois</div>
+              <input class="form-input" id="f-sprint" type="number" min="0" step="1" placeholder="ex : 1" inputmode="numeric" />
             </div>
           </div>
 
@@ -102,16 +101,14 @@
               <span class="input-tag tag-auto">Auto</span>
             </label>
             <input class="form-input" id="f-nb-jours" type="number" min="1" step="1" placeholder="Calculé automatiquement" />
-            <div class="hint">Calculé pour la France — modifiable si besoin</div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" id="vel-hc-group" style="display:none;">
             <label class="form-label" for="f-vel-hc">
               Vélocité estimée Hors Congés
               <span class="input-tag tag-auto">Pré-rempli</span>
             </label>
             <input class="form-input" id="f-vel-hc" type="number" min="0" step="0.01" placeholder="ex : 160" />
-            <div class="hint">Pré-rempli d'après le sprint précédent — modifiable</div>
           </div>
         </div>
 
@@ -175,11 +172,11 @@
             <tr>
               <th>Sprint</th>
               <th>Mois</th>
+              <th class="col-highlight">Vél. estimée</th>
+              <th>Vél. constatée</th>
               <th class="col-desktop-only">Nb devs</th>
               <th class="col-desktop-only">Jours abs.</th>
               <th class="col-desktop-only">Jours ouvrés</th>
-              <th class="col-highlight">Vél. estimée</th>
-              <th>Vél. constatée</th>
               <th class="col-desktop-only">Actions</th>
             </tr>
           </thead>
