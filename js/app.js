@@ -11,6 +11,7 @@ const App = (() => {
   let editingSprintId = null;
   let isFirstSprint = true;
   let firstSprintMois = null; // "YYYY-MM" du premier sprint enregistré
+  let velHCEdited = false;   // true si l'user a overridé manuellement velEstHC
 
   // ── Init ──────────────────────────────────────────────────────────────────
 
@@ -172,10 +173,45 @@ const App = (() => {
     document.getElementById('f-mois-year').addEventListener('change', onMoisChange);
     document.getElementById('f-sprint').addEventListener('input', onSprintChange);
 
-    // Recalcul temps réel
-    ['f-nb-dev', 'f-jours-abs', 'f-nb-jours', 'f-vel-hc', 'f-vel-const'].forEach(id => {
+    // Nb devs : recalcule velEstHC automatiquement si pas d'override manuel
+    document.getElementById('f-nb-dev').addEventListener('input', () => {
+      computeAndSetVelHC();
+      updateLiveCalc();
+    });
+
+    // VelHC : si l'user tape directement, on retient son override
+    document.getElementById('f-vel-hc').addEventListener('input', () => {
+      velHCEdited = true;
+      updateLiveCalc();
+    });
+
+    // Autres champs : recalcul temps réel uniquement
+    ['f-jours-abs', 'f-nb-jours', 'f-vel-const'].forEach(id => {
       document.getElementById(id).addEventListener('input', updateLiveCalc);
     });
+  }
+
+  /**
+   * Recalcule et met à jour velEstHC en fonction du nb de devs saisi,
+   * sauf si l'utilisateur a overridé manuellement la valeur.
+   */
+  function computeAndSetVelHC() {
+    if (velHCEdited) return;
+    if (allSprints.length === 0) return;
+
+    const nbDevCurrent = parseFloatOrNull(document.getElementById('f-nb-dev').value);
+    if (!nbDevCurrent || nbDevCurrent <= 0) return;
+
+    const last = allSprints[allSprints.length - 1];
+    const moyNbDev = calcMoyNbDev(allSprints);
+    const lastMoyVel = last.moyVelCalcHC;
+
+    if (lastMoyVel !== null && lastMoyVel !== undefined && moyNbDev) {
+      const prefill = calcVelEstHCPrefill(nbDevCurrent, moyNbDev, lastMoyVel);
+      if (prefill !== null) {
+        document.getElementById('f-vel-hc').value = formatVal(prefill, 2);
+      }
+    }
   }
 
   function onMoisChange() {
@@ -274,13 +310,16 @@ const App = (() => {
     document.getElementById('f-nb-dev').value = last.nbDev ?? '';
     document.getElementById('f-jours-abs').value = '';
 
-    // Pré-remplir Vélocité est HC
+    // Pré-remplir Vélocité est HC avec la formule corrigée
+    // Vel_est_HC = Moy_Vel_calc_HC × (nb_devs_sprint_suivant / nb_devs_moyen_6mois)
     const lastMoyVel = last.moyVelCalcHC;
-    if (lastMoyVel !== null && lastMoyVel !== undefined && last.nbDev) {
-      const nbDevNext = last.nbDev; // par défaut identique, l'user peut changer
-      const prefill = calcVelEstHCPrefill(nbDevNext, last.nbDev, lastMoyVel);
+    const moyNbDev = calcMoyNbDev(allSprints);
+    if (lastMoyVel !== null && lastMoyVel !== undefined && moyNbDev) {
+      const nbDevNext = last.nbDev; // même effectif que le sprint précédent par défaut
+      const prefill = calcVelEstHCPrefill(nbDevNext, moyNbDev, lastMoyVel);
       document.getElementById('f-vel-hc').value = prefill !== null ? formatVal(prefill, 2) : '';
     }
+    velHCEdited = false; // reset du flag : le prefill ne compte pas comme override
 
     updateBadge();
     updateLiveCalc();
@@ -324,6 +363,7 @@ const App = (() => {
   }
 
   function resetForm() {
+    velHCEdited = false;
     setMoisValue('');
     ['f-sprint', 'f-nb-dev', 'f-jours-abs', 'f-nb-jours', 'f-vel-hc', 'f-vel-const'].forEach(id => {
       document.getElementById(id).value = '';

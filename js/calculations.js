@@ -39,17 +39,34 @@ function calcVelCalcHC(nbDev, nbJours, joursAbsDev, velConst) {
 
 /**
  * Vélocité estimée Hors Congés pour le sprint N
- * Pré-remplie à partir du sprint précédent :
- * = (nbDev_N / nbDev_N-1) × moyVelCalcHC_N-1
+ * = Moy_Vel_calc_HC × (nbDevCurrent / moyNbDev_6mois)
  *
- * @param {number} nbDevCurrent    - Nombre de devs sprint courant
- * @param {number} nbDevPrevious   - Nombre de devs sprint précédent
- * @param {number} moyVelCalcHCPrev - Moy. Vél. calc. HC du sprint précédent
+ * Normalise la vélocité historique moyenne par le nombre moyen de devs
+ * sur la période (cohérent avec la fenêtre glissante 6 mois),
+ * puis la scale au nombre de devs du sprint en cours.
+ *
+ * @param {number} nbDevCurrent  - Nombre de devs du sprint à venir
+ * @param {number} moyNbDev      - Moyenne du nb de devs sur les 6 derniers sprints
+ * @param {number} moyVelCalcHC  - Moy. Vél. calc. HC (6 derniers sprints)
  * @returns {number|null}
  */
-function calcVelEstHCPrefill(nbDevCurrent, nbDevPrevious, moyVelCalcHCPrev) {
-  if (!nbDevPrevious || nbDevPrevious === 0 || moyVelCalcHCPrev === null || moyVelCalcHCPrev === undefined) return null;
-  return (nbDevCurrent / nbDevPrevious) * moyVelCalcHCPrev;
+function calcVelEstHCPrefill(nbDevCurrent, moyNbDev, moyVelCalcHC) {
+  if (!moyNbDev || moyNbDev === 0 || moyVelCalcHC === null || moyVelCalcHC === undefined) return null;
+  return (nbDevCurrent / moyNbDev) * moyVelCalcHC;
+}
+
+/**
+ * Moyenne du nombre de devs sur les N derniers sprints.
+ * Utilisée pour normaliser la Vélocité est. HC lors d'un changement d'effectif.
+ *
+ * @param {Array<{nbDev: number}>} sprints - Sprints triés chronologiquement
+ * @param {number} windowSize
+ * @returns {number|null}
+ */
+function calcMoyNbDev(sprints, windowSize = 6) {
+  const recent = sprints.filter(s => s.nbDev != null).slice(-windowSize);
+  if (recent.length === 0) return null;
+  return recent.reduce((sum, s) => sum + s.nbDev, 0) / recent.length;
 }
 
 /**
