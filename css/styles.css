@@ -626,6 +626,16 @@ td.col-success {
   color: var(--accent);
 }
 
+.btn-delete-inline {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete-inline:hover {
+  border-color: rgba(239, 68, 68, 0.55);
+  color: #fca5a5;
+}
+
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
@@ -861,9 +871,16 @@ input[type="number"] { -moz-appearance: textfield; }
   #history-body tr { cursor: pointer; }
 
   .modal { padding: 1.5rem 1.25rem; }
+  .modal-close {
+    font-size: 1.6rem;
+    padding: 0.15rem 0.35rem;
+  }
 
-  /* Month picker : mois large, année compacte */
-  .month-picker { grid-template-columns: 1fr 72px; }
+  /* Month picker : mois légèrement réduit, année compacte */
+  .month-picker {
+    grid-template-columns: minmax(0, 0.85fr) 68px;
+    max-width: 240px;
+  }
   .month-picker select.form-input {
     width: 100%;
   }
@@ -879,6 +896,19 @@ input[type="number"] { -moz-appearance: textfield; }
     width: 100%;
     justify-content: center;
     min-height: 52px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+  .modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 52px;
+  }
+  .modal-actions .btn-secondary {
+    display: none;
   }
 
   /* Mois/Sprint : alignement vertical sur mobile */

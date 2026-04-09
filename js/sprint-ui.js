@@ -14,6 +14,16 @@
     return isNaN(parsed) ? null : parsed;
   }
 
+  function formatInteger(value) {
+    if (value === null || value === undefined || isNaN(value)) return '—';
+    return String(Math.round(Number(value)));
+  }
+
+  function formatDecimal(value, decimals = 2) {
+    if (value === null || value === undefined || isNaN(value)) return '—';
+    return Number(value).toFixed(decimals).replace(/\.?0+$/, '');
+  }
+
   function setLoadingHidden(hidden) {
     getEl('loading-overlay').classList.toggle('hidden', hidden);
   }
@@ -37,7 +47,7 @@
   function renderVelocityResult(velEstAC) {
     const result = getEl('result-vel-ac');
     if (velEstAC !== null && velEstAC !== undefined) {
-      result.textContent = formatVal(velEstAC, 1);
+      result.textContent = formatInteger(velEstAC);
       result.classList.remove('na');
       return;
     }
@@ -69,7 +79,7 @@
 
     if (count === 0) {
       tbody.innerHTML = `
-        <tr><td colspan="5">
+        <tr><td colspan="8">
           <div class="empty-state">
             <div class="empty-state-icon">◎</div>
             <p>Aucun sprint enregistré. Commencez par saisir votre premier sprint.</p>
@@ -85,13 +95,17 @@
           <span class="month-full">${formatMois(sprint.mois, false)}</span>
           <span class="month-short">${formatMois(sprint.mois, true)}</span>
         </td>
-        <td class="col-highlight">${formatVal(sprint.velEstAC, 1)}</td>
+        <td class="col-highlight">${formatInteger(sprint.velEstAC)}</td>
         <td class="${sprint.velConst !== null && sprint.velConst !== undefined ? 'col-success' : 'col-muted'}">
-          ${sprint.velConst !== null && sprint.velConst !== undefined ? formatVal(sprint.velConst, 1) : '—'}
+          ${sprint.velConst !== null && sprint.velConst !== undefined ? formatInteger(sprint.velConst) : '—'}
         </td>
+        <td class="col-desktop-only">${formatDecimal(sprint.nbDev)}</td>
+        <td class="col-desktop-only">${formatDecimal(sprint.joursAbsDev ?? 0)}</td>
+        <td class="col-desktop-only">${formatInteger(sprint.nbJours)}</td>
         <td class="col-desktop-only">
           <div class="td-actions">
             <button class="btn-edit" onclick="event.stopPropagation();App.openModal('${sprint.id}')">Éditer</button>
+            <button class="btn-edit btn-delete-inline" onclick="event.stopPropagation();App.deleteSprintFromRow('${sprint.id}')">Supprimer</button>
           </div>
         </td>
       </tr>
@@ -101,10 +115,10 @@
   function showEditModal(sprint) {
     getEl('modal-title').textContent = `Modifier Sprint ${sprint.sprint} — ${formatMois(sprint.mois)}`;
     getEl('modal-sprint-id').value = sprint.id;
-    getEl('modal-vel-const').value = sprint.velConst ?? '';
-    getEl('modal-nb-dev').value = sprint.nbDev ?? '';
-    getEl('modal-jours-abs').value = sprint.joursAbsDev ?? '';
-    getEl('modal-nb-jours').value = sprint.nbJours ?? '';
+    getEl('modal-vel-const').value = sprint.velConst !== null && sprint.velConst !== undefined ? Math.round(sprint.velConst) : '';
+    getEl('modal-nb-dev').value = sprint.nbDev !== null && sprint.nbDev !== undefined ? formatDecimal(sprint.nbDev) : '';
+    getEl('modal-jours-abs').value = sprint.joursAbsDev !== null && sprint.joursAbsDev !== undefined ? formatDecimal(sprint.joursAbsDev) : '';
+    getEl('modal-nb-jours').value = sprint.nbJours !== null && sprint.nbJours !== undefined ? Math.round(sprint.nbJours) : '';
     getEl('edit-modal').classList.add('open');
   }
 

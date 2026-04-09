@@ -35,16 +35,22 @@ const App = (() => {
     getEl('f-mois-year').addEventListener('change', onMoisChange);
 
     const sprintInput = getEl('f-sprint');
-    sprintInput.addEventListener('keydown', (event) => {
-      if (['-', '+', '.', 'e'].includes(event.key)) event.preventDefault();
-    });
-    sprintInput.addEventListener('input', () => {
-      const clean = sprintInput.value.replace(/[^0-9]/g, '');
-      if (sprintInput.value !== clean) sprintInput.value = clean;
-      onSprintChange();
+    const integerInputIds = ['f-sprint', 'f-nb-jours', 'f-vel-const', 'modal-vel-const', 'modal-nb-jours'];
+    integerInputIds.forEach((id) => {
+      const input = getEl(id);
+      if (!input) return;
+      input.addEventListener('keydown', (event) => {
+        if (['-', '+', '.', ',', 'e'].includes(event.key)) event.preventDefault();
+      });
+      input.addEventListener('input', () => {
+        const clean = input.value.replace(/[^0-9]/g, '');
+        if (input.value !== clean) input.value = clean;
+        if (id === 'f-sprint') onSprintChange();
+        if (['f-nb-jours', 'f-vel-const'].includes(id)) updateLiveCalc();
+      });
     });
 
-    ['f-nb-dev', 'f-jours-abs', 'f-nb-jours', 'f-vel-const'].forEach((id) => {
+    ['f-nb-dev', 'f-jours-abs'].forEach((id) => {
       getEl(id).addEventListener('input', updateLiveCalc);
     });
   }
@@ -89,6 +95,10 @@ const App = (() => {
     return allSprints.length > 0 ? allSprints[0].mois : null;
   }
 
+  function getFirstSprintNumber() {
+    return allSprints.length > 0 ? allSprints[0].sprint : 0;
+  }
+
   function isFirstSprint() {
     return allSprints.length === 0;
   }
@@ -128,7 +138,9 @@ const App = (() => {
 
   function validateSprintData(data, sprintIdToIgnore = null) {
     if (!data.mois) return 'Veuillez renseigner le mois.';
-    if (!data.sprint || data.sprint < 1) return 'Veuillez renseigner le numéro de sprint.';
+    if (data.sprint === null || Number.isNaN(data.sprint) || data.sprint < 0) {
+      return 'Veuillez renseigner le numéro de sprint.';
+    }
     if (!data.nbDev || data.nbDev <= 0) return 'Veuillez renseigner le nombre de devs.';
     if (!data.nbJours || data.nbJours <= 0) return 'Veuillez renseigner le nombre de jours ouvrés.';
 
@@ -161,8 +173,8 @@ const App = (() => {
     updateWorkingDaysFromMonth();
 
     if (!isFirstSprint()) {
-      const sprint = monthDiff(getFirstSprintMois(), mois) + 1;
-      if (sprint > 0) getEl('f-sprint').value = sprint;
+      const sprint = getFirstSprintNumber() + monthDiff(getFirstSprintMois(), mois);
+      if (sprint >= 0) getEl('f-sprint').value = sprint;
     }
 
     setSprintBadge(getEl('f-sprint').value);
@@ -171,10 +183,10 @@ const App = (() => {
 
   function onSprintChange() {
     const sprint = parseInt(getEl('f-sprint').value, 10);
-    if (!sprint || sprint < 1) return;
+    if (Number.isNaN(sprint) || sprint < 0) return;
 
     if (!isFirstSprint()) {
-      const mois = addMonths(getFirstSprintMois(), sprint - 1);
+      const mois = addMonths(getFirstSprintMois(), sprint - getFirstSprintNumber());
       setMoisValue(mois);
       updateWorkingDaysFromMonth();
     }
@@ -303,6 +315,19 @@ const App = (() => {
     }
   }
 
+  async function deleteSprintFromRow(sprintId) {
+    if (!sprintId) return;
+    if (!confirm('Supprimer ce sprint ? Cette action est irréversible.')) return;
+
+    try {
+      await store.deleteSprint(sprintId, allSprints);
+      toast('Sprint supprimé.', 'success');
+      await refreshSprints();
+    } catch (error) {
+      toast(`Erreur : ${error.message}`, 'error');
+    }
+  }
+
   async function logout() {
     await logoutProject();
     window.location.href = 'index.html';
@@ -316,6 +341,7 @@ const App = (() => {
     closeModal,
     saveModal,
     deleteSprint,
+    deleteSprintFromRow,
     logout,
   };
 })();

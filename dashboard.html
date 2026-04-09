@@ -74,7 +74,7 @@
                 N° Sprint
                 <span class="input-tag tag-input">Saisir</span>
               </label>
-              <input class="form-input" id="f-sprint" type="number" min="0" step="1" placeholder="ex : 1" inputmode="numeric" />
+              <input class="form-input" id="f-sprint" type="number" min="0" step="1" placeholder="ex : 0" inputmode="numeric" />
             </div>
           </div>
 
@@ -84,14 +84,14 @@
                 Nombre de devs
                 <span class="input-tag tag-input">Saisir</span>
               </label>
-              <input class="form-input" id="f-nb-dev" type="number" min="0" step="1" placeholder="ex : 6" />
+              <input class="form-input" id="f-nb-dev" type="number" min="0" step="0.01" placeholder="ex : 6" />
             </div>
             <div class="form-group">
               <label class="form-label" for="f-jours-abs">
                 Jours d'absence devs
                 <span class="input-tag tag-input">Saisir</span>
               </label>
-              <input class="form-input" id="f-jours-abs" type="number" min="0" step="0.5" placeholder="ex : 5" />
+              <input class="form-input" id="f-jours-abs" type="number" min="0" step="0.01" placeholder="ex : 5" />
             </div>
           </div>
 
@@ -122,7 +122,7 @@
                 <span style="flex:1;"></span>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <input class="form-input" id="f-vel-const" type="number" min="0" step="0.01"
+                <input class="form-input" id="f-vel-const" type="number" min="0" step="1"
                   placeholder="Saisir après la fin du sprint" />
                 <div class="hint">Nombre de SP réellement réalisés</div>
               </div>
@@ -155,12 +155,15 @@
               <th>Mois</th>
               <th class="col-highlight">Vél. estimée</th>
               <th>Vél. constatée</th>
+              <th class="col-desktop-only">Nb devs</th>
+              <th class="col-desktop-only">Jours abs.</th>
+              <th class="col-desktop-only">Jours ouvrés</th>
               <th class="col-desktop-only">Actions</th>
             </tr>
           </thead>
           <tbody id="history-body">
             <tr>
-              <td colspan="5">
+              <td colspan="8">
                 <div class="empty-state">
                   <div class="empty-state-icon">◎</div>
                   <p>Aucun sprint enregistré. Commencez par saisir votre premier sprint.</p>
@@ -186,17 +189,17 @@
 
       <div class="form-group">
         <label class="form-label">Vélocité constatée</label>
-        <input class="form-input" id="modal-vel-const" type="number" min="0" step="0.01"
+        <input class="form-input" id="modal-vel-const" type="number" min="0" step="1"
           placeholder="Story points réalisés" />
         <div class="hint">Saisir après la fin du sprint</div>
       </div>
       <div class="form-group">
         <label class="form-label">Nombre de devs</label>
-        <input class="form-input" id="modal-nb-dev" type="number" min="0" step="1" />
+        <input class="form-input" id="modal-nb-dev" type="number" min="0" step="0.01" />
       </div>
       <div class="form-group">
         <label class="form-label">Jours d'absence devs</label>
-        <input class="form-input" id="modal-jours-abs" type="number" min="0" step="0.5" />
+        <input class="form-input" id="modal-jours-abs" type="number" min="0" step="0.01" />
       </div>
       <div class="form-group">
         <label class="form-label">Nombre jours ouvrés</label>
