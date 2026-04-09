@@ -10,6 +10,13 @@
     return isNaN(parsed) ? null : parsed;
   }
 
+  function formatMoisLabel(mois) {
+    if (!mois) return '—';
+    const [year, month] = mois.split('-').map(Number);
+    const date = new Date(year, month - 1, 1);
+    return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }
+
   function createSprintEditModal(options) {
     const {
       elements,
@@ -36,7 +43,7 @@
     }
 
     function fill(sprint) {
-      elements.title.textContent = `Modifier Sprint ${sprint.sprint} — ${formatMois(sprint.mois)}`;
+      elements.title.textContent = `Modifier Sprint ${sprint.sprint} — ${formatMoisLabel(sprint.mois)}`;
       elements.sprintId.value = sprint.id;
       elements.velConst.value = sprint.velConst !== null && sprint.velConst !== undefined ? Math.round(sprint.velConst) : '';
       elements.nbDev.value = sprint.nbDev !== null && sprint.nbDev !== undefined ? Number(sprint.nbDev).toFixed(2).replace(/\.?0+$/, '') : '';
