@@ -112,31 +112,6 @@
     `).join('');
   }
 
-  function showEditModal(sprint) {
-    getEl('modal-title').textContent = `Modifier Sprint ${sprint.sprint} — ${formatMois(sprint.mois)}`;
-    getEl('modal-sprint-id').value = sprint.id;
-    getEl('modal-vel-const').value = sprint.velConst !== null && sprint.velConst !== undefined ? Math.round(sprint.velConst) : '';
-    getEl('modal-nb-dev').value = sprint.nbDev !== null && sprint.nbDev !== undefined ? formatDecimal(sprint.nbDev) : '';
-    getEl('modal-jours-abs').value = sprint.joursAbsDev !== null && sprint.joursAbsDev !== undefined ? formatDecimal(sprint.joursAbsDev) : '';
-    getEl('modal-nb-jours').value = sprint.nbJours !== null && sprint.nbJours !== undefined ? Math.round(sprint.nbJours) : '';
-    getEl('edit-modal').classList.add('open');
-  }
-
-  function hideEditModal(event) {
-    if (event && event.target !== getEl('edit-modal')) return;
-    getEl('edit-modal').classList.remove('open');
-    getEl('modal-sprint-id').value = '';
-  }
-
-  function readModalValues() {
-    return {
-      velConst: parseNumberOrNull(getEl('modal-vel-const').value),
-      nbDev: parseNumberOrNull(getEl('modal-nb-dev').value),
-      joursAbsDev: parseNumberOrNull(getEl('modal-jours-abs').value),
-      nbJours: parseNumberOrNull(getEl('modal-nb-jours').value),
-    };
-  }
-
   function toast(message, type = 'success') {
     const container = getEl('toast-container');
     const element = document.createElement('div');
@@ -162,9 +137,6 @@
     renderVelocityResult,
     clearVelocityResult,
     renderHistory,
-    showEditModal,
-    hideEditModal,
-    readModalValues,
     toast,
     animateBtn,
   };

@@ -178,11 +178,11 @@
   </main>
 
   <!-- ── Edit Modal ── -->
-  <div class="modal-overlay" id="edit-modal" onclick="App.closeModal(event)">
+  <div class="modal-overlay" id="edit-modal">
     <div class="modal">
       <div class="modal-header">
         <h3 id="modal-title">Modifier le sprint</h3>
-        <button class="modal-close" id="modal-close-btn" type="button" onclick="window.App.closeModal()">✕</button>
+        <button class="modal-close" id="modal-close-btn" type="button">✕</button>
       </div>
 
       <input type="hidden" id="modal-sprint-id" />
@@ -207,9 +207,9 @@
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-danger" id="modal-delete-btn" type="button" onclick="window.App.deleteSprint()">Supprimer</button>
-        <button class="btn btn-secondary" id="modal-cancel-btn" type="button" onclick="window.App.closeModal()">Annuler</button>
-        <button class="btn btn-save" id="modal-save-btn" type="button" onclick="window.App.saveModal()">Enregistrer</button>
+        <button class="btn btn-danger" id="modal-delete-btn" type="button">Supprimer</button>
+        <button class="btn btn-secondary" id="modal-cancel-btn" type="button">Annuler</button>
+        <button class="btn btn-save" id="modal-save-btn" type="button">Enregistrer</button>
       </div>
     </div>
   </div>
@@ -228,7 +228,7 @@
   <script src="js/auth.js"></script>
   <script src="js/sprint-store.js"></script>
   <script src="js/sprint-ui.js"></script>
-  <script src="js/ui-bindings.js"></script>
+  <script src="js/sprint-edit-modal.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

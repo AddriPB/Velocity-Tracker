@@ -9,7 +9,7 @@ const App = (() => {
   let currentUser = null;
   let store = null;
   let allSprints = [];
-  let editingSprintId = null;
+  let editModal = null;
 
   async function init() {
     currentUser = await requireAuth('index.html');
@@ -18,6 +18,7 @@ const App = (() => {
     const projectId = getProjectId() || extractProjectIdFromEmail(currentUser.email);
     getEl('header-project-id').textContent = projectId || currentUser.uid.slice(0, 8);
 
+    initEditModal();
     populateYearOptions();
     bindFormListeners();
     await refreshSprints();
@@ -30,22 +31,48 @@ const App = (() => {
     prefillNextSprint();
   }
 
-  function bindFormListeners() {
-    getEl('f-mois-month').addEventListener('change', onMoisChange);
-    getEl('f-mois-year').addEventListener('change', onMoisChange);
-    bindModalActionButtons(
-      {
+  function initEditModal() {
+    editModal = createSprintEditModal({
+      elements: {
+        overlay: getEl('edit-modal'),
+        title: getEl('modal-title'),
+        sprintId: getEl('modal-sprint-id'),
+        velConst: getEl('modal-vel-const'),
+        nbDev: getEl('modal-nb-dev'),
+        joursAbs: getEl('modal-jours-abs'),
+        nbJours: getEl('modal-nb-jours'),
         closeButton: getEl('modal-close-btn'),
         cancelButton: getEl('modal-cancel-btn'),
         saveButton: getEl('modal-save-btn'),
         deleteButton: getEl('modal-delete-btn'),
       },
-      {
-        onClose: () => closeModal(),
-        onSave: () => saveModal(),
-        onDelete: () => deleteSprint(),
-      }
-    );
+      getSprintById: (id) => allSprints.find((sprint) => sprint.id === id) || null,
+      validateSprint: validateSprintData,
+      toast,
+      onSave: async (sprintId, mergedSprint) => {
+        const patch = {
+          nbDev: mergedSprint.nbDev,
+          joursAbsDev: mergedSprint.joursAbsDev,
+          nbJours: mergedSprint.nbJours,
+          velConst: mergedSprint.velConst,
+        };
+        await store.updateSprint(sprintId, patch, allSprints);
+        toast('Sprint mis à jour.', 'success');
+        await refreshSprints();
+      },
+      onDelete: async (sprintId) => {
+        await store.deleteSprint(sprintId, allSprints);
+        toast('Sprint supprimé.', 'success');
+        await refreshSprints();
+      },
+    });
+
+    editModal.bind();
+  }
+
+  function bindFormListeners() {
+    getEl('f-mois-month').addEventListener('change', onMoisChange);
+    getEl('f-mois-year').addEventListener('change', onMoisChange);
 
     const sprintInput = getEl('f-sprint');
     const integerInputIds = ['f-sprint', 'f-nb-jours', 'f-vel-const', 'modal-vel-const', 'modal-nb-jours'];
@@ -275,59 +302,19 @@ const App = (() => {
   function openModal(sprintId) {
     const sprint = allSprints.find((item) => item.id === sprintId);
     if (!sprint) return;
-
-    editingSprintId = sprintId;
-    showEditModal(sprint);
+    editModal.open(sprint);
   }
 
   function closeModal(event) {
-    hideEditModal(event);
-    editingSprintId = null;
+    editModal.close(event);
   }
 
   async function saveModal() {
-    if (!editingSprintId) return;
-
-    const current = allSprints.find((sprint) => sprint.id === editingSprintId);
-    if (!current) return;
-
-    const modalValues = readModalValues();
-    const mergedSprint = mergeSprintPatch(current, modalValues);
-    const patch = {
-      nbDev: mergedSprint.nbDev,
-      joursAbsDev: mergedSprint.joursAbsDev,
-      nbJours: mergedSprint.nbJours,
-      velConst: mergedSprint.velConst,
-    };
-
-    const validationError = validateSprintData(mergedSprint, editingSprintId);
-    if (validationError) {
-      toast(validationError, 'error');
-      return;
-    }
-
-    try {
-      await store.updateSprint(editingSprintId, patch, allSprints);
-      toast('Sprint mis à jour.', 'success');
-      closeModal();
-      await refreshSprints();
-    } catch (error) {
-      toast(`Erreur : ${error.message}`, 'error');
-    }
+    return editModal.submit();
   }
 
   async function deleteSprint() {
-    if (!editingSprintId) return;
-    if (!confirm('Supprimer ce sprint ? Cette action est irréversible.')) return;
-
-    try {
-      await store.deleteSprint(editingSprintId, allSprints);
-      toast('Sprint supprimé.', 'success');
-      closeModal();
-      await refreshSprints();
-    } catch (error) {
-      toast(`Erreur : ${error.message}`, 'error');
-    }
+    return editModal.remove();
   }
 
   async function deleteSprintFromRow(sprintId) {
