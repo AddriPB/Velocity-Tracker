@@ -876,10 +876,11 @@ input[type="number"] { -moz-appearance: textfield; }
     padding: 0.15rem 0.35rem;
   }
 
-  /* Month picker : mois légèrement réduit, année compacte */
+  /* Month picker : largeur totale alignée avec les champs dessous */
   .month-picker {
-    grid-template-columns: minmax(0, 0.85fr) 68px;
-    max-width: 240px;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    width: 100%;
+    max-width: none;
   }
   .month-picker select.form-input {
     width: 100%;
@@ -906,6 +907,13 @@ input[type="number"] { -moz-appearance: textfield; }
     width: 100%;
     justify-content: center;
     min-height: 52px;
+  }
+  .modal-actions .btn-danger {
+    background: rgba(239, 68, 68, 0.07);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.22);
+    font-size: 0.85rem;
+    padding: 0.65rem 1.2rem;
   }
   .modal-actions .btn-secondary {
     display: none;

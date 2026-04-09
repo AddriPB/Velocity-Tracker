@@ -8,6 +8,7 @@ const {
   calcVelEstHCFromHistory,
   computeSprintDerived,
   recomputeAllSprintMetrics,
+  mergeSprintPatch,
 } = require('../js/calculations.js');
 
 test('calcVelCalcHC neutralise les absences pour retrouver la capacité hors congés', () => {
@@ -62,4 +63,33 @@ test('recomputeAllSprintMetrics recalcule toute la timeline après insertion ou 
   assert.equal(Number(recomputed[1].moyVelCalcHC.toFixed(2)), 116.76);
   assert.equal(Number(recomputed[2].velEstHC.toFixed(2)), 56.96);
   assert.equal(Number(recomputed[2].velEstAC.toFixed(2)), 56.96);
+});
+
+test('mergeSprintPatch conserve les valeurs existantes quand le patch modal est partiel', () => {
+  const current = {
+    id: 'b',
+    sprint: 2,
+    mois: '2025-02',
+    nbDev: 5.5,
+    joursAbsDev: 1.25,
+    nbJours: 20,
+    velConst: 110,
+  };
+
+  const merged = mergeSprintPatch(current, {
+    nbDev: 6.25,
+    joursAbsDev: null,
+    nbJours: null,
+    velConst: null,
+  });
+
+  assert.deepEqual(merged, {
+    id: 'b',
+    sprint: 2,
+    mois: '2025-02',
+    nbDev: 6.25,
+    joursAbsDev: 1.25,
+    nbJours: 20,
+    velConst: 110,
+  });
 });

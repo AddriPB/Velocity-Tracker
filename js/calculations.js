@@ -118,6 +118,16 @@
     return recomputed;
   }
 
+  function mergeSprintPatch(baseSprint, patch) {
+    return {
+      ...baseSprint,
+      nbDev: patch.nbDev ?? baseSprint.nbDev,
+      joursAbsDev: patch.joursAbsDev ?? baseSprint.joursAbsDev ?? 0,
+      nbJours: patch.nbJours ?? baseSprint.nbJours,
+      velConst: patch.velConst ?? baseSprint.velConst ?? null,
+    };
+  }
+
   function formatVal(val, decimals = 2) {
     if (val === null || val === undefined || isNaN(val)) return '—';
     return Number(val).toFixed(decimals);
@@ -135,6 +145,7 @@
     calcInitialVelEstHC,
     computeSprintDerived,
     recomputeAllSprintMetrics,
+    mergeSprintPatch,
     formatVal,
   };
 

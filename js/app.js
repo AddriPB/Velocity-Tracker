@@ -279,13 +279,15 @@ const App = (() => {
     if (!current) return;
 
     const modalValues = readModalValues();
+    const mergedSprint = mergeSprintPatch(current, modalValues);
     const patch = {
-      ...modalValues,
-      joursAbsDev: modalValues.joursAbsDev ?? 0,
+      nbDev: mergedSprint.nbDev,
+      joursAbsDev: mergedSprint.joursAbsDev,
+      nbJours: mergedSprint.nbJours,
+      velConst: mergedSprint.velConst,
     };
 
-    const nextData = { ...current, ...patch };
-    const validationError = validateSprintData(nextData, editingSprintId);
+    const validationError = validateSprintData(mergedSprint, editingSprintId);
     if (validationError) {
       toast(validationError, 'error');
       return;
