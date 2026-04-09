@@ -915,6 +915,10 @@ input[type="number"] { -moz-appearance: textfield; }
     font-size: 0.85rem;
     padding: 0.65rem 1.2rem;
   }
+  .modal-actions .btn-danger:hover {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.38);
+  }
   .modal-actions .btn-secondary {
     display: none;
   }

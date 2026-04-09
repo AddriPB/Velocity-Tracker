@@ -33,6 +33,19 @@ const App = (() => {
   function bindFormListeners() {
     getEl('f-mois-month').addEventListener('change', onMoisChange);
     getEl('f-mois-year').addEventListener('change', onMoisChange);
+    bindModalActionButtons(
+      {
+        closeButton: getEl('modal-close-btn'),
+        cancelButton: getEl('modal-cancel-btn'),
+        saveButton: getEl('modal-save-btn'),
+        deleteButton: getEl('modal-delete-btn'),
+      },
+      {
+        onClose: () => closeModal(),
+        onSave: () => saveModal(),
+        onDelete: () => deleteSprint(),
+      }
+    );
 
     const sprintInput = getEl('f-sprint');
     const integerInputIds = ['f-sprint', 'f-nb-jours', 'f-vel-const', 'modal-vel-const', 'modal-nb-jours'];
