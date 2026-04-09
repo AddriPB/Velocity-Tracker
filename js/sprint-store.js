@@ -82,11 +82,34 @@
       return recomputed;
     }
 
+    async function syncDerivedFields(existingSprints) {
+      const recomputed = recomputeAllSprintMetrics(existingSprints);
+      const hasChanges = recomputed.some((sprint, index) => {
+        const current = existingSprints[index];
+        return (
+          current.velEstHC !== sprint.velEstHC ||
+          current.velEstAC !== sprint.velEstAC ||
+          current.velCalcHC !== sprint.velCalcHC ||
+          current.moyVelCalcHC !== sprint.moyVelCalcHC
+        );
+      });
+
+      if (!hasChanges) return existingSprints;
+
+      const batch = db.batch();
+      recomputed.forEach((sprint) => {
+        batch.update(sprintsRef().doc(sprint.id), buildPersistedPayload(sprint));
+      });
+      await batch.commit();
+      return recomputed;
+    }
+
     return {
       loadSprints,
       createSprint,
       updateSprint,
       deleteSprint,
+      syncDerivedFields,
     };
   }
 

@@ -49,16 +49,6 @@
     return recent.reduce((sum, s) => sum + s.nbDev, 0) / recent.length;
   }
 
-  function calcMoyCapacity(sprints, windowSize = 6) {
-    const recent = sprints
-      .map((s) => calcCapacity(s.nbDev, s.nbJours))
-      .filter((capacity) => capacity !== null)
-      .slice(-windowSize);
-
-    if (recent.length === 0) return null;
-    return recent.reduce((sum, capacity) => sum + capacity, 0) / recent.length;
-  }
-
   /**
    * Moyenne glissante des N dernières valeurs de Vélocité calc HC.
    */
@@ -75,19 +65,20 @@
   }
 
   /**
-   * Vélocité estimée HC basée sur l'historique, normalisée par la capacité moyenne
-   * puis rescalée sur la capacité du sprint courant.
+   * Vélocité estimée HC basée sur l'historique.
+   * Méthode métier retenue :
+   * - prendre la moyenne glissante des velCalcHC des 6 derniers sprints
+   * - ne pas re-scaler cette moyenne par la capacité du sprint courant
+   * - appliquer ensuite une seule fois la pondération du sprint courant via calcVelEstAC
    */
   function calcVelEstHCFromHistory(nbDevCurrent, nbJoursCurrent, sprints, windowSize = 6) {
-    const currentCapacity = calcCapacity(nbDevCurrent, nbJoursCurrent);
-    const moyCapacity = calcMoyCapacity(sprints, windowSize);
     const moyVelCalcHC = calcMoyVelCalcHC(sprints, windowSize);
 
-    if (!currentCapacity || !moyCapacity || moyVelCalcHC === null || moyVelCalcHC === undefined) {
+    if (calcCapacity(nbDevCurrent, nbJoursCurrent) === null || moyVelCalcHC === null || moyVelCalcHC === undefined) {
       return null;
     }
 
-    return moyVelCalcHC * currentCapacity / moyCapacity;
+    return moyVelCalcHC;
   }
 
   function calcInitialVelEstHC(nbDev, nbJours, joursAbsDev, velConst) {
@@ -139,7 +130,6 @@
     calcVelEstAC,
     calcVelCalcHC,
     calcMoyNbDev,
-    calcMoyCapacity,
     calcMoyVelCalcHC,
     calcVelEstHCFromHistory,
     calcInitialVelEstHC,

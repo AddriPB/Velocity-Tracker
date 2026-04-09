@@ -26,7 +26,8 @@ const App = (() => {
   }
 
   async function refreshSprints() {
-    allSprints = await store.loadSprints();
+    const loadedSprints = await store.loadSprints();
+    allSprints = await store.syncDerivedFields(loadedSprints);
     renderHistory(allSprints);
     prefillNextSprint();
   }

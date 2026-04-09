@@ -26,7 +26,7 @@ test('calcMoyVelCalcHC garde une fenêtre glissante de 6 valeurs', () => {
   assert.equal(calcMoyVelCalcHC(sprints), 45);
 });
 
-test('calcVelEstHCFromHistory varie avec le nombre de jours ouvrés', () => {
+test('calcVelEstHCFromHistory reprend la moyenne historique sans re-scaling de capacité', () => {
   const history = [
     { nbDev: 5, nbJours: 10, velCalcHC: 100 },
     { nbDev: 5, nbJours: 20, velCalcHC: 200 },
@@ -35,8 +35,8 @@ test('calcVelEstHCFromHistory varie avec le nombre de jours ouvrés', () => {
   const shortSprint = calcVelEstHCFromHistory(5, 10, history);
   const longSprint = calcVelEstHCFromHistory(5, 20, history);
 
-  assert.equal(shortSprint, 100);
-  assert.equal(longSprint, 200);
+  assert.equal(shortSprint, 150);
+  assert.equal(longSprint, 150);
 });
 
 test('computeSprintDerived calcule le premier sprint sans velEstHC saisi', () => {
@@ -61,8 +61,22 @@ test('recomputeAllSprintMetrics recalcule toute la timeline après insertion ou 
 
   assert.equal(Number(recomputed[0].velEstHC.toFixed(2)), 123.53);
   assert.equal(Number(recomputed[1].moyVelCalcHC.toFixed(2)), 116.76);
-  assert.equal(Number(recomputed[2].velEstHC.toFixed(2)), 56.96);
-  assert.equal(Number(recomputed[2].velEstAC.toFixed(2)), 56.96);
+  assert.equal(Number(recomputed[2].velEstHC.toFixed(2)), 116.76);
+  assert.equal(Number(recomputed[2].velEstAC.toFixed(2)), 116.76);
+});
+
+test('recomputeAllSprintMetrics suit le comportement attendu du fichier xlsx sur juillet-aout-septembre 2024', () => {
+  const sprints = [
+    { id: 's1', sprint: 1, mois: '2024-07', nbDev: 7, joursAbsDev: 28, nbJours: 20, velConst: 128 },
+    { id: 's2', sprint: 2, mois: '2024-08', nbDev: 7, joursAbsDev: 60, nbJours: 24, velConst: 223 },
+    { id: 's3', sprint: 3, mois: '2024-09', nbDev: 7, joursAbsDev: 16, nbJours: 20, velConst: 198 },
+  ];
+
+  const recomputed = recomputeAllSprintMetrics(sprints);
+
+  assert.equal(Math.round(recomputed[0].velEstAC), 128);
+  assert.equal(Math.round(recomputed[1].velEstAC), 103);
+  assert.equal(Math.round(recomputed[2].velEstAC), 224);
 });
 
 test('mergeSprintPatch conserve les valeurs existantes quand le patch modal est partiel', () => {
