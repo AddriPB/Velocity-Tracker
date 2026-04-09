@@ -182,7 +182,7 @@
     <div class="modal">
       <div class="modal-header">
         <h3 id="modal-title">Modifier le sprint</h3>
-        <button class="modal-close" id="modal-close-btn" type="button">✕</button>
+        <button class="modal-close" id="modal-close-btn" type="button" onclick="window.App.closeModal()">✕</button>
       </div>
 
       <input type="hidden" id="modal-sprint-id" />
@@ -207,9 +207,9 @@
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-danger" id="modal-delete-btn" type="button">Supprimer</button>
-        <button class="btn btn-secondary" id="modal-cancel-btn" type="button">Annuler</button>
-        <button class="btn btn-save" id="modal-save-btn" type="button">Enregistrer</button>
+        <button class="btn btn-danger" id="modal-delete-btn" type="button" onclick="window.App.deleteSprint()">Supprimer</button>
+        <button class="btn btn-secondary" id="modal-cancel-btn" type="button" onclick="window.App.closeModal()">Annuler</button>
+        <button class="btn btn-save" id="modal-save-btn" type="button" onclick="window.App.saveModal()">Enregistrer</button>
       </div>
     </div>
   </div>

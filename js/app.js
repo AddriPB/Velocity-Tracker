@@ -361,4 +361,5 @@ const App = (() => {
   };
 })();
 
+window.App = App;
 App.init();
