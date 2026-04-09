@@ -4,113 +4,143 @@
  * Fonctions pures sans I/O.
  */
 
-/**
- * Nb Dév réel = (nbDev × nbJours − joursAbsDev) / nbJours
- */
-function calcNbDevReel(nbDev, nbJours, joursAbsDev) {
-  if (!nbJours || nbJours === 0) return null;
-  return (nbDev * nbJours - joursAbsDev) / nbJours;
-}
+(function (global) {
+  function calcCapacity(nbDev, nbJours) {
+    if (!nbDev || !nbJours || nbDev <= 0 || nbJours <= 0) return null;
+    return nbDev * nbJours;
+  }
 
-/**
- * Vélocité estimée Avec Congés
- * = velEstHC × (nbDev × nbJours − joursAbsDev) / (nbDev × nbJours)
- * = velEstHC × nbDevReel / nbDev
- */
-function calcVelEstAC(velEstHC, nbDev, nbJours, joursAbsDev) {
-  if (!nbDev || !nbJours || nbDev === 0) return null;
-  const denominator = nbDev * nbJours;
-  if (denominator === 0) return null;
-  return velEstHC * (nbDev * nbJours - joursAbsDev) / denominator;
-}
+  /**
+   * Nb Dév réel = (nbDev × nbJours − joursAbsDev) / nbJours
+   */
+  function calcNbDevReel(nbDev, nbJours, joursAbsDev) {
+    if (!nbJours || nbJours === 0) return null;
+    return (nbDev * nbJours - joursAbsDev) / nbJours;
+  }
 
-/**
- * Vélocité calculée Hors Congés
- * = (nbDev × nbJours) × velConst / (nbDev × nbJours − joursAbsDev)
- * Requiert velConst renseigné.
- */
-function calcVelCalcHC(nbDev, nbJours, joursAbsDev, velConst) {
-  if (velConst === null || velConst === undefined || velConst === '') return null;
-  const numerator = nbDev * nbJours;
-  const denominator = nbDev * nbJours - joursAbsDev;
-  if (denominator === 0) return null;
-  return numerator * velConst / denominator;
-}
+  /**
+   * Vélocité estimée Avec Congés
+   * = velEstHC × (nbDev × nbJours − joursAbsDev) / (nbDev × nbJours)
+   * = velEstHC × nbDevReel / nbDev
+   */
+  function calcVelEstAC(velEstHC, nbDev, nbJours, joursAbsDev) {
+    const capacity = calcCapacity(nbDev, nbJours);
+    if (!capacity || velEstHC === null || velEstHC === undefined) return null;
+    return velEstHC * (capacity - joursAbsDev) / capacity;
+  }
 
-/**
- * Vélocité estimée Hors Congés pour le sprint N
- * = Moy_Vel_calc_HC × (nbDevCurrent / moyNbDev_6mois)
- *
- * Normalise la vélocité historique moyenne par le nombre moyen de devs
- * sur la période (cohérent avec la fenêtre glissante 6 mois),
- * puis la scale au nombre de devs du sprint en cours.
- *
- * @param {number} nbDevCurrent  - Nombre de devs du sprint à venir
- * @param {number} moyNbDev      - Moyenne du nb de devs sur les 6 derniers sprints
- * @param {number} moyVelCalcHC  - Moy. Vél. calc. HC (6 derniers sprints)
- * @returns {number|null}
- */
-function calcVelEstHCPrefill(nbDevCurrent, moyNbDev, moyVelCalcHC) {
-  if (!moyNbDev || moyNbDev === 0 || moyVelCalcHC === null || moyVelCalcHC === undefined) return null;
-  return (nbDevCurrent / moyNbDev) * moyVelCalcHC;
-}
+  /**
+   * Vélocité calculée Hors Congés
+   * = (nbDev × nbJours) × velConst / (nbDev × nbJours − joursAbsDev)
+   * Requiert velConst renseigné.
+   */
+  function calcVelCalcHC(nbDev, nbJours, joursAbsDev, velConst) {
+    if (velConst === null || velConst === undefined || velConst === '') return null;
+    const capacity = calcCapacity(nbDev, nbJours);
+    if (!capacity) return null;
+    const denominator = capacity - joursAbsDev;
+    if (denominator === 0) return null;
+    return capacity * velConst / denominator;
+  }
 
-/**
- * Moyenne du nombre de devs sur les N derniers sprints.
- * Utilisée pour normaliser la Vélocité est. HC lors d'un changement d'effectif.
- *
- * @param {Array<{nbDev: number}>} sprints - Sprints triés chronologiquement
- * @param {number} windowSize
- * @returns {number|null}
- */
-function calcMoyNbDev(sprints, windowSize = 6) {
-  const recent = sprints.filter(s => s.nbDev != null).slice(-windowSize);
-  if (recent.length === 0) return null;
-  return recent.reduce((sum, s) => sum + s.nbDev, 0) / recent.length;
-}
+  function calcMoyNbDev(sprints, windowSize = 6) {
+    const recent = sprints.filter((s) => s.nbDev != null).slice(-windowSize);
+    if (recent.length === 0) return null;
+    return recent.reduce((sum, s) => sum + s.nbDev, 0) / recent.length;
+  }
 
-/**
- * Moyenne glissante des N dernières valeurs de Vélocité calc HC.
- * Fenêtre par défaut : 6 mois.
- *
- * @param {Array<{velCalcHC: number|null}>} sprints - Sprints triés par ordre chronologique
- * @param {number} windowSize - Taille de la fenêtre (défaut 6)
- * @returns {number|null}
- */
-function calcMoyVelCalcHC(sprints, windowSize = 6) {
-  // Ne garder que les sprints avec une valeur de velCalcHC
-  const validValues = sprints
-    .filter(s => s.velCalcHC !== null && s.velCalcHC !== undefined)
-    .map(s => s.velCalcHC);
+  function calcMoyCapacity(sprints, windowSize = 6) {
+    const recent = sprints
+      .map((s) => calcCapacity(s.nbDev, s.nbJours))
+      .filter((capacity) => capacity !== null)
+      .slice(-windowSize);
 
-  if (validValues.length === 0) return null;
+    if (recent.length === 0) return null;
+    return recent.reduce((sum, capacity) => sum + capacity, 0) / recent.length;
+  }
 
-  const window = validValues.slice(-windowSize);
-  const sum = window.reduce((acc, v) => acc + v, 0);
-  return sum / window.length;
-}
+  /**
+   * Moyenne glissante des N dernières valeurs de Vélocité calc HC.
+   */
+  function calcMoyVelCalcHC(sprints, windowSize = 6) {
+    const validValues = sprints
+      .filter((s) => s.velCalcHC !== null && s.velCalcHC !== undefined)
+      .map((s) => s.velCalcHC);
 
-/**
- * Recalcule le champ moyVelCalcHC pour tous les sprints en tenant compte
- * de la fenêtre glissante de 6 mois.
- * Retourne une copie des sprints avec moyVelCalcHC mis à jour.
- *
- * @param {Array} sprints - Sprints triés chronologiquement (sprint ASC)
- * @param {number} windowSize
- * @returns {Array}
- */
-function recomputeAllMoyVelCalcHC(sprints, windowSize = 6) {
-  return sprints.map((sprint, index) => {
-    const precedents = sprints.slice(0, index + 1);
-    const moy = calcMoyVelCalcHC(precedents, windowSize);
-    return { ...sprint, moyVelCalcHC: moy };
-  });
-}
+    if (validValues.length === 0) return null;
 
-/**
- * Formate un nombre avec au plus 2 décimales, ou retourne '—' si null/undefined.
- */
-function formatVal(val, decimals = 2) {
-  if (val === null || val === undefined || isNaN(val)) return '—';
-  return Number(val).toFixed(decimals);
-}
+    const window = validValues.slice(-windowSize);
+    const sum = window.reduce((acc, v) => acc + v, 0);
+    return sum / window.length;
+  }
+
+  /**
+   * Vélocité estimée HC basée sur l'historique, normalisée par la capacité moyenne
+   * puis rescalée sur la capacité du sprint courant.
+   */
+  function calcVelEstHCFromHistory(nbDevCurrent, nbJoursCurrent, sprints, windowSize = 6) {
+    const currentCapacity = calcCapacity(nbDevCurrent, nbJoursCurrent);
+    const moyCapacity = calcMoyCapacity(sprints, windowSize);
+    const moyVelCalcHC = calcMoyVelCalcHC(sprints, windowSize);
+
+    if (!currentCapacity || !moyCapacity || moyVelCalcHC === null || moyVelCalcHC === undefined) {
+      return null;
+    }
+
+    return moyVelCalcHC * currentCapacity / moyCapacity;
+  }
+
+  function calcInitialVelEstHC(nbDev, nbJours, joursAbsDev, velConst) {
+    return calcVelCalcHC(nbDev, nbJours, joursAbsDev, velConst);
+  }
+
+  function computeSprintDerived(sprint, previousSprints, windowSize = 6) {
+    const velEstHC = previousSprints.length === 0
+      ? calcInitialVelEstHC(sprint.nbDev, sprint.nbJours, sprint.joursAbsDev, sprint.velConst)
+      : calcVelEstHCFromHistory(sprint.nbDev, sprint.nbJours, previousSprints, windowSize);
+
+    const velEstAC = calcVelEstAC(velEstHC, sprint.nbDev, sprint.nbJours, sprint.joursAbsDev);
+    const velCalcHC = calcVelCalcHC(sprint.nbDev, sprint.nbJours, sprint.joursAbsDev, sprint.velConst);
+    const moyVelCalcHC = calcMoyVelCalcHC([...previousSprints, { velCalcHC }], windowSize);
+
+    return { velEstHC, velEstAC, velCalcHC, moyVelCalcHC };
+  }
+
+  function recomputeAllSprintMetrics(sprints, windowSize = 6) {
+    const sorted = [...sprints].sort((a, b) => a.sprint - b.sprint);
+    const recomputed = [];
+
+    sorted.forEach((sprint) => {
+      const derived = computeSprintDerived(sprint, recomputed, windowSize);
+      recomputed.push({ ...sprint, ...derived });
+    });
+
+    return recomputed;
+  }
+
+  function formatVal(val, decimals = 2) {
+    if (val === null || val === undefined || isNaN(val)) return '—';
+    return Number(val).toFixed(decimals);
+  }
+
+  const api = {
+    calcCapacity,
+    calcNbDevReel,
+    calcVelEstAC,
+    calcVelCalcHC,
+    calcMoyNbDev,
+    calcMoyCapacity,
+    calcMoyVelCalcHC,
+    calcVelEstHCFromHistory,
+    calcInitialVelEstHC,
+    computeSprintDerived,
+    recomputeAllSprintMetrics,
+    formatVal,
+  };
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = api;
+  }
+
+  Object.assign(global, api);
+})(typeof window !== 'undefined' ? window : globalThis);

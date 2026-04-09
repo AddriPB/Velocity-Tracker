@@ -362,7 +362,12 @@ a:hover { color: var(--accent-hover); }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2.5rem;
-  align-items: start;
+  align-items: stretch;
+}
+
+.form-grid > div {
+  display: flex;
+  flex-direction: column;
 }
 
 .form-section-label {
@@ -408,6 +413,9 @@ a:hover { color: var(--accent-hover); }
   border: 1px solid rgba(79, 110, 247, 0.25);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .result-main {
@@ -450,6 +458,7 @@ a:hover { color: var(--accent-hover); }
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  margin-top: auto;
 }
 
 .result-detail-row {
@@ -839,6 +848,8 @@ input[type="number"] { -moz-appearance: textfield; }
 
   .app-main { padding: 1rem; }
 
+  .input-tag { display: none; }
+
   /* Tableau : cacher colonnes desktop */
   .col-desktop-only { display: none; }
 
@@ -853,21 +864,25 @@ input[type="number"] { -moz-appearance: textfield; }
 
   /* Month picker : mois large, année compacte */
   .month-picker { grid-template-columns: 1fr 72px; }
+  .month-picker select.form-input {
+    width: 100%;
+  }
 
   /* Formulaire : champs en colonne, boutons alignés pleine largeur */
-  .form-row { grid-template-columns: 1fr 1fr; } /* garder 2 cols sauf sprint/mois */
+  .form-row { grid-template-columns: 1fr; }
   .form-actions {
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.9rem;
   }
   .btn-save,
   .btn-reset {
     width: 100%;
     justify-content: center;
+    min-height: 52px;
   }
 
-  /* Mois/Sprint : mois large, sprint compact */
+  /* Mois/Sprint : alignement vertical sur mobile */
   .form-row:first-child {
-    grid-template-columns: 1fr 80px;
+    grid-template-columns: 1fr;
   }
 }

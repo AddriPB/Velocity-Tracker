@@ -46,7 +46,7 @@
             <div class="form-group">
               <label class="form-label">
                 Mois / Année
-                <span class="input-tag tag-input">Saisie</span>
+                <span class="input-tag tag-input">Saisir</span>
               </label>
               <div class="month-picker">
                 <select class="form-input" id="f-mois-month">
@@ -72,7 +72,7 @@
             <div class="form-group">
               <label class="form-label" for="f-sprint">
                 N° Sprint
-                <span class="input-tag tag-input">Saisie</span>
+                <span class="input-tag tag-input">Saisir</span>
               </label>
               <input class="form-input" id="f-sprint" type="number" min="0" step="1" placeholder="ex : 1" inputmode="numeric" />
             </div>
@@ -82,14 +82,14 @@
             <div class="form-group">
               <label class="form-label" for="f-nb-dev">
                 Nombre de devs
-                <span class="input-tag tag-input">Saisie</span>
+                <span class="input-tag tag-input">Saisir</span>
               </label>
               <input class="form-input" id="f-nb-dev" type="number" min="0" step="1" placeholder="ex : 6" />
             </div>
             <div class="form-group">
               <label class="form-label" for="f-jours-abs">
                 Jours d'absence devs
-                <span class="input-tag tag-input">Saisie</span>
+                <span class="input-tag tag-input">Saisir</span>
               </label>
               <input class="form-input" id="f-jours-abs" type="number" min="0" step="0.5" placeholder="ex : 5" />
             </div>
@@ -103,13 +103,6 @@
             <input class="form-input" id="f-nb-jours" type="number" min="1" step="1" placeholder="Calculé automatiquement" />
           </div>
 
-          <div class="form-group" id="vel-hc-group" style="display:none;">
-            <label class="form-label" for="f-vel-hc">
-              Vélocité estimée Hors Congés
-              <span class="input-tag tag-auto">Pré-rempli</span>
-            </label>
-            <input class="form-input" id="f-vel-hc" type="number" min="0" step="0.01" placeholder="ex : 160" />
-          </div>
         </div>
 
         <!-- RIGHT: Result -->
@@ -124,10 +117,6 @@
             </div>
 
             <div class="result-details">
-              <div class="result-detail-row">
-                <span class="result-detail-label">Nb. devs réel (pondéré congés)</span>
-                <span class="result-detail-value" id="result-nb-dev-reel">—</span>
-              </div>
               <div class="result-detail-row" style="padding-top:0.75rem;border-top:1px solid var(--border-light);">
                 <span class="result-detail-label">Vélocité constatée (sprint terminé)</span>
                 <span style="flex:1;"></span>
@@ -136,14 +125,6 @@
                 <input class="form-input" id="f-vel-const" type="number" min="0" step="0.01"
                   placeholder="Saisir après la fin du sprint" />
                 <div class="hint">Nombre de SP réellement réalisés</div>
-              </div>
-              <div class="result-detail-row">
-                <span class="result-detail-label">Vélocité calculée Hors Congés</span>
-                <span class="result-detail-value highlight" id="result-vel-calc-hc">—</span>
-              </div>
-              <div class="result-detail-row">
-                <span class="result-detail-label">Moy. Vél. calc. Hors Congés (6 mois)</span>
-                <span class="result-detail-value" id="result-moy-vel">—</span>
               </div>
             </div>
           </div>
@@ -174,15 +155,12 @@
               <th>Mois</th>
               <th class="col-highlight">Vél. estimée</th>
               <th>Vél. constatée</th>
-              <th class="col-desktop-only">Nb devs</th>
-              <th class="col-desktop-only">Jours abs.</th>
-              <th class="col-desktop-only">Jours ouvrés</th>
               <th class="col-desktop-only">Actions</th>
             </tr>
           </thead>
           <tbody id="history-body">
             <tr>
-              <td colspan="8">
+              <td colspan="5">
                 <div class="empty-state">
                   <div class="empty-state-icon">◎</div>
                   <p>Aucun sprint enregistré. Commencez par saisir votre premier sprint.</p>
@@ -224,10 +202,6 @@
         <label class="form-label">Nombre jours ouvrés</label>
         <input class="form-input" id="modal-nb-jours" type="number" min="1" step="1" />
       </div>
-      <div class="form-group">
-        <label class="form-label">Vélocité estimée Hors Congés</label>
-        <input class="form-input" id="modal-vel-hc" type="number" min="0" step="0.01" />
-      </div>
 
       <div class="modal-actions">
         <button class="btn btn-danger" onclick="App.deleteSprint()">Supprimer</button>
@@ -249,6 +223,8 @@
   <script src="js/working-days.js"></script>
   <script src="js/calculations.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/sprint-store.js"></script>
+  <script src="js/sprint-ui.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
